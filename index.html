@@ -1,0 +1,135 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Education Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">STEM Education Hub</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#home" class="hover:underline">Home</a></li>
+                    <li><a href="#about" class="hover:underline">About</a></li>
+                    <li><a href="#programs" class="hover:underline">Programs</a></li>
+                    <li><a href="#contact" class="hover:underline">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-blue-500 text-white py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-4">Ignite Your Future with STEM</h2>
+            <p class="text-lg mb-6">Explore Science, Technology, Engineering, and Mathematics through engaging programs designed to spark curiosity and innovation.</p>
+            <a href="#programs" class="bg-yellow-400 text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300">Discover Our Programs</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">About Us</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto text-center">
+                STEM Education Hub is dedicated to empowering the next generation of innovators. Our mission is to provide hands-on, interactive learning experiences that inspire students to pursue careers in STEM fields.
+            </p>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section id="programs" class="bg-gray-200 py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Featured Programs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2">Robotics Workshop</h3>
+                    <p class="text-gray-600">Learn to build and program robots using cutting-edge tools and technologies.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2">Coding Bootcamp</h3>
+                    <p class="text-gray-600">Master programming languages like Python and JavaScript in an immersive environment.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2">Science Explorers</h3>
+                    <p class="text-gray-600">Conduct exciting experiments to uncover the wonders of chemistry and physics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Get in Touch</h2>
+            <div class="max-w-lg mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div>
+                        <label for="name" class="block text-gray-700 mb-2">Name</label>
+                        <input type="text" id="name" class="w-full p-3 border rounded-lg mb-4" placeholder="Your Name">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-700 mb-2">Email</label>
+                        <input type="email" id="email" class="w-full p-3 border rounded-lg mb-4" placeholder="Your Email">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-gray-700 mb-2">Message</label>
+                        <textarea id="message" class="w-full p-3 border rounded-lg mb-4" rows="5" placeholder="Your Message"></textarea>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-500">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-blue-600 text-white py-4">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 STEM Education Hub. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
